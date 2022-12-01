@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'simple_camera = csi_camera.simple_camera:main',
+            'simple_camera = csi_camera.ros2_simple_camera:main',
             'dual_camera = csi_camera.ros2_dual_camera:main'
         ],
     },
