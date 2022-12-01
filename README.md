@@ -4,9 +4,13 @@ Implementation of ROS2 nodes to publish CSI camera images from Nvidia Jetson as 
 
 ## Usage
 
-```ros2 run csi_camera simple_camera # to publish images from sensor_id=0
+```
+ros2 run csi_camera simple_camera # to publish images from sensor_id=0
 # or
-ros2 run csi_camera dual_camera # to publish images from both cameras```
+ros2 run csi_camera dual_camera # to publish images from both cameras
+```
 
 To see the data:
-```ros2 topic echo /image/left/image_compressed```
+```
+ros2 topic echo /image/left/image_compressed
+```
