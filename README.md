@@ -14,3 +14,11 @@ To see the data:
 ```
 ros2 topic echo /image/left/image_compressed
 ```
+
+## Docker setup
+To grant access to CSI cameras inside a docker container running on Jetson Xavier, run docker with the following arguments:
+```
+ docker run --gpus all -e NVIDIA_REQUIRE_JETPACK="csv-mounts=all" --runtime nvidia --name YOUR_NAME -ti --privileged -v /dev:/dev -v /tmp/argus_socket:/tmp/argus_socket --network host YOUR_IMAGE_ID /bin/bash
+ ```
+ 
+ Docker used is based on https://github.com/dusty-nv/jetson-containers, specifically `foxy-ros-base-l4t-r32.7.1`.
