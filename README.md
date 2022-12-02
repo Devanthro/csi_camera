@@ -12,7 +12,8 @@ ros2 run csi_camera dual_camera # to publish images from both cameras
 
 To see the data:
 ```bash
-ros2 topic echo /image/left/image_compressed
+ros2 topic echo /image/left/image_compressed # sensor_id=0
+ros2 topic echo /image/right/image_compressed
 ```
 
 ## Docker setup
