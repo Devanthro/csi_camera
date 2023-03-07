@@ -51,7 +51,7 @@ class CameraNode(Node):
         self.get_logger().info(
             f"Starting publisher:\n {gstreamer_pipeline(flip_method=0)}")
         self.video_capture = cv2.VideoCapture(
-            gstreamer_pipeline(flip_method=1,framerate=60), cv2.CAP_GSTREAMER)
+            gstreamer_pipeline(flip_method=3,framerate=10), cv2.CAP_GSTREAMER)
 
         self.timer = self.create_timer(1.0/60, self.image_callback)
         self.publish_timer = self.create_timer(1/10.0, self.publish_callback)

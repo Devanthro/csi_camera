@@ -103,7 +103,7 @@ class CameraNode(Node):
         
         self.start_cameras()
 
-        self.timer = self.create_timer(1.0/20, self.image_callback)
+        self.timer = self.create_timer(1.0/10, self.image_callback)
         self.get_logger().info("Stereocamera node ready")
 
     def close_videocapture(self):
@@ -119,12 +119,12 @@ class CameraNode(Node):
             time_msg = self.get_time_msg()
             if self.left_camera.video_capture.isOpened():
                 _, left_image = self.left_camera.read()
-                left_img_msg = self.get_image_msg(left_image, time_msg)
+                left_img_msg = self.get_image_msg(left_image, time_msg, compressed=True)
                 self.left_image_publisher_.publish(left_img_msg)
 
             if self.right_camera.video_capture.isOpened():
                 _, right_image = self.right_camera.read()
-                right_img_msg = self.get_image_msg(right_image, time_msg, False)
+                right_img_msg = self.get_image_msg(right_image, time_msg, compressed=True, left=False)
                 self.right_image_publisher_.publish(right_img_msg)
 
         except Exception as e:
@@ -138,15 +138,13 @@ class CameraNode(Node):
         time_msg.nanosec = int(msg_time[1])
         return time_msg
 
-    def get_image_msg(self, image, time,left=True):
+    def get_image_msg(self, image, time,compressed=False,left=True):
         """
         Get image message, takes image as input and returns CvBridge image message
         :param image: cv2 image
         :return: sensor_msgs/Imag
         """
-        img_msg = self.br.cv2_to_compressed_imgmsg(image) #, dst_format="png")
-        #print(img_msg)
-        #img_msg = self.br.cv2_to_imgmsg(image, encoding="bgr8")
+        img_msg = self.br.cv2_to_compressed_imgmsg(image,dst_format='jpeg' ) if compressed else self.br.cv2_to_imgmsg(image)
         img_msg.header.stamp = time
         img_msg.header.frame_id = self.left_frame_id_ if left else self.right_frame_id_
         return img_msg
@@ -190,16 +188,16 @@ Default 1920x1080
 
 def gstreamer_pipeline(
     sensor_id=0,
-    sensor_mode=0,
-    capture_width=3040,
-    capture_height=4056,
-    display_width=3040,#int(3040/2),
-    display_height=4056,#int(4056/2),
+    # sensor_mode=1,
+    capture_width=720,
+    capture_height=1280,
+    display_width=int(720*0.5), #720, #int(720), #3040,#int(3040/2),
+    display_height=int(1280*0.5), #1280, #int(1280),#4056,#int(4056/2),
     framerate=30,
     flip_method=0,
 ):
     return (
-        "nvarguscamerasrc sensor-id=%d sensor-mode=%d exposurecompensation=0 wbmode=1 ! "
+        "nvarguscamerasrc sensor-id=%d  exposurecompensation=0 wbmode=1 ! " #sensor-mode=%d
         "video/x-raw(memory:NVMM), width=(int)%d, height=(int)%d, framerate=(fraction)%d/1 ! "
         "nvvidconv flip-method=%d ! "
         "video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! "
@@ -207,7 +205,7 @@ def gstreamer_pipeline(
         "video/x-raw, format=(string)BGR ! appsink"
         % (
             sensor_id,
-            sensor_mode,
+            # sensor_mode,
             capture_width,
             capture_height,
             framerate,
