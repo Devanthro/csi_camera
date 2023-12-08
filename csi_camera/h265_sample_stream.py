@@ -52,7 +52,7 @@ class CameraNode(Node):
            if result:
                try:
                     data = map_info.data
-                    import pdb; pdb.set_trace()
+                    # import pdb; pdb.set_trace()
                     msg = ByteMultiArray()
                     msg.data = [bytes([byte]) for byte in data]
                     self.image_publisher_.publish(msg)
