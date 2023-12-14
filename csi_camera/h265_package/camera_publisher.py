@@ -8,8 +8,8 @@ gi.require_version('Gst', '1.0')
 from gi.repository import Gst
 import subprocess
 import threading
-import signal
-import sys
+
+# Define the gstreamer_pipeline1 function here
 
 def gstreamer_pipeline1(sensor_id=0, capture_width=1920, capture_height=1080, framerate=30, bitrate=8000000, flip_method=0):
     return (
@@ -21,22 +21,21 @@ def gstreamer_pipeline1(sensor_id=0, capture_width=1920, capture_height=1080, fr
         "fdsink"
     )
 
+
 class CameraNode(Node):
     def __init__(self, **kwargs):
         super().__init__("camera_node")
         self.image_topic_ = self.declare_parameter("image_topic", "/image/encoded").value
         self.image_publisher_ = self.create_publisher(ByteMultiArray, self.image_topic_, 1)
-        self.total_data_size = 0
-        self.message_count = 0
-
-        # Set up signal handler
-        signal.signal(signal.SIGINT, self.signal_handler)
 
         # GStreamer setup for pipeline1
         Gst.init(None)
         self.pipeline1 = Gst.parse_launch(gstreamer_pipeline1())
         self.fdsink1 = self.pipeline1.get_by_name('fdsink')
         self.start_gstreamer_subprocess()
+
+        self.total_data_size = 0
+        self.message_count = 0
 
     def start_gstreamer_subprocess(self):
         cmd = ["gst-launch-1.0"] + gstreamer_pipeline1().split()
@@ -48,30 +47,26 @@ class CameraNode(Node):
         while self.gst_process.poll() is None:
             data = self.gst_process.stdout.read(1000000)
             if data:
+                # Convert the data into a list of bytes
                 msg = ByteMultiArray()
                 msg.data = [bytes([b]) for b in data]
                 self.image_publisher_.publish(msg)
                 data_size = len(msg.data)
-                self.total_data_size += data_size
-                self.message_count += 1
                 self.get_logger().info(f"Published data of size {data_size} bytes")
+                self.total_data_size += len(msg.data)
+                self.message_count += 1
+                print(f"\nTotal data size transmitted: {round(self.total_data_size / (1024 * 1024),2)} MB")
+                print(f"Total number of messages transmitted: {self.message_count}")
 
-    def signal_handler(self, signum, frame):
-        self.get_logger().info(f"Signal {signum} received, shutting down...")
-        self.close_videocapture()
-        self.destroy_node()
-        rclpy.shutdown()
 
-    def close_videocapture(self):
-        self.video_capture.release()
-        print(f"\nTotal data size transmitted: {self.total_data_size / (1024 * 1024)} MB")
-        print(f"Total number of messages transmitted: {self.message_count}")
-        self.pipeline1.set_state(Gst.State.NULL)
+    def close_gstreamer(self):
+        if self.pipeline1:
+            self.get_logger().info("Stopping GStreamer pipeline1")
+            self.pipeline1.set_state(Gst.State.NULL)
 
 def main(args=None):
     rclpy.init(args=args)
     camera_node = CameraNode()
-    signal.signal(signal.SIGINT, camera_node.signal_handler)
     rclpy.spin(camera_node)
     camera_node.close_gstreamer()
     camera_node.destroy_node()
