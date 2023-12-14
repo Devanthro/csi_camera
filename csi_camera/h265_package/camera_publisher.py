@@ -21,7 +21,6 @@ def gstreamer_pipeline1(sensor_id=0, capture_width=1920, capture_height=1080, fr
         "fdsink"
     )
 
-
 class CameraNode(Node):
     def __init__(self, **kwargs):
         super().__init__("camera_node")
@@ -71,6 +70,8 @@ def main(args=None):
     camera_node.close_gstreamer()
     camera_node.destroy_node()
     rclpy.shutdown()
+    
 
 if __name__ == "__main__":
     main()
+

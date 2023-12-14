@@ -9,16 +9,20 @@ from gi.repository import Gst
 import numpy as np
 import cv2
 
-def gstreamer_pipeline2():
+def gstreamer_pipeline2(display_width = 1920, display_height = 1080):
     return (
         "appsrc name=appsrc ! "
         "h265parse ! "
         "nvv4l2decoder ! "
         "nvvidconv ! "
-        "video/x-raw, format=(string)BGRx ! "
+        "video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! "
         "videoconvert ! "
         "video/x-raw, format=(string)BGR ! "
         "appsink emit-signals=True name=appsink2"
+        % (
+            display_width,
+            display_height,
+        )
     )
 
 class DisplayNode(Node):
