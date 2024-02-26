@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/usr/bin/python3
 
 # based on https://github.com/JetsonHacksNano/CSI-Camera
@@ -306,3 +307,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+=======
+>>>>>>> 10f79445d388d03eaa62c2b729bdde0184db71a0
